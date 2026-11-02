@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_error %}
+{% block title %}Add Expense{% endblock %}
+{% block heading %}Add Expense{% endblock %}
+{% block subtitle %}Record money you spent and choose a category.{% endblock %}
+
+{% block content %}
+<div class="card app-card form-card">
+  <div class="card-body p-4">
+    {% if errors %}
+      <div class="alert alert-danger" id="form-error-summary" role="alert">
+        Some details need fixing. Check the highlighted fields and try again.
+      </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('add_expense') }}" id="expense-form" novalidate>
+      <div class="mb-3">
+        <label for="expense-title" class="form-label">Expense title</label>
+        <input type="text" class="form-control {% if errors.get('title') %}is-invalid{% endif %}"
+               id="expense-title" name="title" maxlength="100" placeholder="e.g. Groceries"
+               value="{{ form_data.get('title', '') }}">
+        {{ field_error(errors, 'title', 'expense') }}
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="expense-amount" class="form-label">Amount ({{ currency }})</label>
+          <input type="text" inputmode="decimal" class="form-control {% if errors.get('amount') %}is-invalid{% endif %}"
+                 id="expense-amount" name="amount" placeholder="0.00"
+                 value="{{ form_data.get('amount', '') }}">
+          {{ field_error(errors, 'amount', 'expense') }}
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="expense-category" class="form-label">Category</label>
+          <select class="form-select {% if errors.get('category') %}is-invalid{% endif %}"
+                  id="expense-category" name="category">
+            <option value="">Select a category</option>
+            {% for category in expense_categories %}
+              <option value="{{ category }}" {% if form_data.get('category') == category %}selected{% endif %}>{{ category }}</option>
+            {% endfor %}
+          </select>
+          {{ field_error(errors, 'category', 'expense') }}
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="expense-date" class="form-label">Date</label>
+          <input type="date" class="form-control {% if errors.get('date') %}is-invalid{% endif %}"
+                 id="expense-date" name="date"
+                 value="{{ form_data.get('date', today_iso) }}">
+          {{ field_error(errors, 'date', 'expense') }}
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="expense-description" class="form-label">Description (optional)</label>
+        <textarea class="form-control {% if errors.get('description') %}is-invalid{% endif %}"
+                  id="expense-description" name="description" rows="3" maxlength="255"
+                  placeholder="Any note about this expense">{{ form_data.get('description', '') }}</textarea>
+        {{ field_error(errors, 'description', 'expense') }}
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary-soft" id="expense-submit">Save expense</button>
+        <a class="btn btn-ghost" id="expense-cancel" href="{{ url_for('dashboard') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

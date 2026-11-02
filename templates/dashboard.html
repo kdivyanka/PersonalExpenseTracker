@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block subtitle %}Your money at a glance, calculated from your saved transactions.{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card app-card stat-card stat-income">
+      <div class="card-body">
+        <div class="stat-label">Total income</div>
+        <div class="stat-value" id="total-income">{{ currency }}{{ total_income|money }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card app-card stat-card stat-expense">
+      <div class="card-body">
+        <div class="stat-label">Total expenses</div>
+        <div class="stat-value" id="total-expenses">{{ currency }}{{ total_expenses|money }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card app-card stat-card stat-balance">
+      <div class="card-body">
+        <div class="stat-label">Available balance</div>
+        <div class="stat-value {% if available_balance < 0 %}text-negative{% endif %}" id="available-balance">{{ currency }}{{ available_balance|money }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card app-card stat-card stat-count">
+      <div class="card-body">
+        <div class="stat-label">Transactions</div>
+        <div class="stat-value" id="transaction-count">{{ transaction_count }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-5">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <h2 class="card-title-text">Expenses by category</h2>
+        {% if category_values %}
+          <div class="chart-box">
+            <canvas id="category-chart" data-chart="category"
+                    data-labels='{{ category_labels|tojson }}' data-values='{{ category_values|tojson }}'></canvas>
+          </div>
+        {% else %}
+          <p class="empty-note" id="category-chart-empty">No expenses yet. Add an expense to see the breakdown.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <h2 class="card-title-text">Income vs expenses</h2>
+        {% if chart_months %}
+          <div class="chart-box">
+            <canvas id="income-expense-chart" data-chart="income-expense"
+                    data-labels='{{ chart_months|tojson }}' data-income='{{ chart_income|tojson }}'
+                    data-expenses='{{ chart_expenses|tojson }}'></canvas>
+          </div>
+        {% else %}
+          <p class="empty-note" id="income-expense-chart-empty">No transactions yet. Add income or an expense to see this chart.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="card-title-text mb-0">Recent transactions</h2>
+          <a href="{{ url_for('transactions') }}" id="view-all-transactions-link" class="link-soft">View all</a>
+        </div>
+        {% if recent_transactions %}
+          <div class="table-responsive">
+            <table class="table app-table" id="recent-transactions-table">
+              <thead><tr><th>Title</th><th>Category</th><th>Date</th><th class="text-end">Amount</th></tr></thead>
+              <tbody>
+                {% for t in recent_transactions %}
+                <tr id="recent-row-{{ t.id }}">
+                  <td>{{ t.title }}</td>
+                  <td>{{ t.category }}</td>
+                  <td>{{ t.date.isoformat() }}</td>
+                  <td class="text-end {% if t.type == 'Income' %}amount-income{% else %}amount-expense{% endif %}">
+                    {% if t.type == 'Income' %}+{% else %}-{% endif %}{{ currency }}{{ t.amount|money }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p class="empty-note" id="no-recent-transactions">No transactions yet. Start by adding your first income or expense.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card app-card h-100">
+      <div class="card-body">
+        <h2 class="card-title-text">Monthly expense summary</h2>
+        <p class="muted-text" id="current-month-label">{{ current_month.label }}</p>
+        <dl class="summary-list">
+          <div><dt>Income</dt><dd id="month-income">{{ currency }}{{ current_month.income|money }}</dd></div>
+          <div><dt>Expenses</dt><dd id="month-expenses">{{ currency }}{{ current_month.expenses|money }}</dd></div>
+          <div><dt>Savings</dt><dd id="month-savings" class="{% if current_month.savings < 0 %}text-negative{% endif %}">{{ currency }}{{ current_month.savings|money }}</dd></div>
+        </dl>
+        {% if monthly_totals %}
+          <div class="table-responsive">
+            <table class="table app-table" id="monthly-expense-table">
+              <thead><tr><th>Month</th><th class="text-end">Expenses</th></tr></thead>
+              <tbody>
+                {% for row in monthly_totals|reverse %}
+                <tr><td>{{ row.label }}</td><td class="text-end">{{ currency }}{{ row.expenses|money }}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

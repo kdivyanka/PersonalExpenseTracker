@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Monthly Summary{% endblock %}
+{% block heading %}Monthly Summary{% endblock %}
+{% block subtitle %}See what you earned, spent and saved in any month.{% endblock %}
+
+{% block content %}
+<div class="card app-card mb-3">
+  <div class="card-body">
+    <form method="get" action="{{ url_for('monthly_summary') }}" id="month-form" class="row g-2 align-items-end">
+      <div class="col-sm-6 col-lg-3">
+        <label for="month-select" class="form-label">Month</label>
+        <input type="month" class="form-control" id="month-select" name="month" value="{{ selected_month }}">
+      </div>
+      <div class="col-sm-6 col-lg-2">
+        <button type="submit" class="btn btn-primary-soft w-100" id="view-month-btn">View month</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<h2 class="section-title" id="selected-month-label">{{ summary.label }}</h2>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="card app-card stat-card stat-income"><div class="card-body">
+      <div class="stat-label">Monthly income</div>
+      <div class="stat-value" id="summary-income">{{ currency }}{{ summary.income|money }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card app-card stat-card stat-expense"><div class="card-body">
+      <div class="stat-label">Monthly expenses</div>
+      <div class="stat-value" id="summary-expenses">{{ currency }}{{ summary.expenses|money }}</div>
+    </div></div>
+  </div>
+  <div class="col-md-4">
+    <div class="card app-card stat-card stat-balance"><div class="card-body">
+      <div class="stat-label">Monthly savings</div>
+      <div class="stat-value {% if summary.savings < 0 %}text-negative{% endif %}" id="summary-savings">{{ currency }}{{ summary.savings|money }}</div>
+    </div></div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-5">
+    <div class="card app-card h-100"><div class="card-body">
+      <h2 class="card-title-text">Expense breakdown by category</h2>
+      {% if summary.category_breakdown %}
+        <div class="chart-box">
+          <canvas id="category-chart" data-chart="category"
+                  data-labels='{{ category_labels|tojson }}' data-values='{{ category_values|tojson }}'></canvas>
+        </div>
+        <div class="table-responsive mt-3">
+          <table class="table app-table" id="category-breakdown-table">
+            <thead><tr><th>Category</th><th class="text-end">Spent</th></tr></thead>
+            <tbody>
+              {% for name, total in summary.category_breakdown %}
+              <tr><td>{{ name }}</td><td class="text-end">{{ currency }}{{ total|money }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="empty-note" id="category-breakdown-empty">No expenses recorded in this month.</p>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card app-card h-100"><div class="card-body">
+      <h2 class="card-title-text">Monthly income vs expenses</h2>
+      {% if chart_months %}
+        <div class="chart-box">
+          <canvas id="income-expense-chart" data-chart="income-expense"
+                  data-labels='{{ chart_months|tojson }}' data-income='{{ chart_income|tojson }}'
+                  data-expenses='{{ chart_expenses|tojson }}'></canvas>
+        </div>
+        <div class="table-responsive mt-3">
+          <table class="table app-table" id="monthly-overview-table">
+            <thead><tr><th>Month</th><th class="text-end">Income</th><th class="text-end">Expenses</th><th class="text-end">Savings</th></tr></thead>
+            <tbody>
+              {% for row in monthly_totals|reverse %}
+              <tr>
+                <td>{{ row.label }}</td>
+                <td class="text-end">{{ currency }}{{ row.income|money }}</td>
+                <td class="text-end">{{ currency }}{{ row.expenses|money }}</td>
+                <td class="text-end {% if row.savings < 0 %}text-negative{% endif %}">{{ currency }}{{ row.savings|money }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p class="empty-note" id="income-expense-chart-empty">No transactions yet. Add income or an expense to see monthly totals.</p>
+      {% endif %}
+    </div></div>
+  </div>
+</div>
+{% endblock %}

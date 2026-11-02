@@ -1,0 +1,6 @@
+{# Shows a validation error under a form field. Example id: error-income-amount #}
+{% macro field_error(errors, name, prefix) %}
+  {% if errors.get(name) %}
+    <div class="invalid-feedback d-block" id="error-{{ prefix }}-{{ name }}">{{ errors[name] }}</div>
+  {% endif %}
+{% endmacro %}

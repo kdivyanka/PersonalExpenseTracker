@@ -1,0 +1,4 @@
+# Only needed later, for your own testing assignment
+-r requirements.txt
+pytest
+selenium

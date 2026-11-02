@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_macros.html" import field_error %}
+{% block title %}Add Income{% endblock %}
+{% block heading %}Add Income{% endblock %}
+{% block subtitle %}Record money you received, like salary or freelance work.{% endblock %}
+
+{% block content %}
+<div class="card app-card form-card">
+  <div class="card-body p-4">
+    {% if errors %}
+      <div class="alert alert-danger" id="form-error-summary" role="alert">
+        Some details need fixing. Check the highlighted fields and try again.
+      </div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('add_income') }}" id="income-form" novalidate>
+      <div class="mb-3">
+        <label for="income-source" class="form-label">Income source</label>
+        <input type="text" class="form-control {% if errors.get('source') %}is-invalid{% endif %}"
+               id="income-source" name="source" maxlength="100" placeholder="e.g. Monthly salary"
+               value="{{ form_data.get('source', '') }}">
+        {{ field_error(errors, 'source', 'income') }}
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="income-amount" class="form-label">Amount ({{ currency }})</label>
+          <input type="text" inputmode="decimal" class="form-control {% if errors.get('amount') %}is-invalid{% endif %}"
+                 id="income-amount" name="amount" placeholder="0.00"
+                 value="{{ form_data.get('amount', '') }}">
+          {{ field_error(errors, 'amount', 'income') }}
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="income-date" class="form-label">Date</label>
+          <input type="date" class="form-control {% if errors.get('date') %}is-invalid{% endif %}"
+                 id="income-date" name="date"
+                 value="{{ form_data.get('date', today_iso) }}">
+          {{ field_error(errors, 'date', 'income') }}
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label for="income-description" class="form-label">Description (optional)</label>
+        <textarea class="form-control {% if errors.get('description') %}is-invalid{% endif %}"
+                  id="income-description" name="description" rows="3" maxlength="255"
+                  placeholder="Any note about this income">{{ form_data.get('description', '') }}</textarea>
+        {{ field_error(errors, 'description', 'income') }}
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary-soft" id="income-submit">Save income</button>
+        <a class="btn btn-ghost" id="income-cancel" href="{{ url_for('dashboard') }}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }}{% endblock %}
+{% block heading %}Error {{ code }}{% endblock %}
+{% block content %}
+<div class="card app-card">
+  <div class="card-body p-4">
+    <p id="error-message">{{ message }}</p>
+    <a class="btn btn-primary-soft" id="back-to-dashboard-btn" href="{{ url_for('dashboard') }}">Back to dashboard</a>
+  </div>
+</div>
+{% endblock %}

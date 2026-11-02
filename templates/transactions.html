@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Transaction History{% endblock %}
+{% block heading %}Transaction History{% endblock %}
+{% block subtitle %}Search, filter and manage every income and expense record.{% endblock %}
+
+{% block content %}
+<div class="card app-card mb-3">
+  <div class="card-body">
+    <form method="get" action="{{ url_for('transactions') }}" id="filter-form" class="row g-2 align-items-end">
+      <div class="col-lg-4">
+        <label for="search-input" class="form-label">Search</label>
+        <input type="text" class="form-control" id="search-input" name="search"
+               placeholder="Title, category or description" value="{{ search_text }}">
+      </div>
+      <div class="col-sm-6 col-lg-2">
+        <label for="filter-type" class="form-label">Type</label>
+        <select class="form-select" id="filter-type" name="type">
+          <option value="all" {% if type_filter == 'all' %}selected{% endif %}>All types</option>
+          <option value="Income" {% if type_filter == 'Income' %}selected{% endif %}>Income</option>
+          <option value="Expense" {% if type_filter == 'Expense' %}selected{% endif %}>Expense</option>
+        </select>
+      </div>
+      <div class="col-sm-6 col-lg-2">
+        <label for="filter-category" class="form-label">Category</label>
+        <select class="form-select" id="filter-category" name="category">
+          <option value="all" {% if category_filter == 'all' %}selected{% endif %}>All categories</option>
+          {% for category in filter_categories %}
+            <option value="{{ category }}" {% if category_filter == category %}selected{% endif %}>{{ category }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-6 col-lg-2">
+        <label for="sort-date" class="form-label">Sort by date</label>
+        <select class="form-select" id="sort-date" name="sort">
+          <option value="date_desc" {% if sort == 'date_desc' %}selected{% endif %}>Newest first</option>
+          <option value="date_asc" {% if sort == 'date_asc' %}selected{% endif %}>Oldest first</option>
+        </select>
+      </div>
+      <div class="col-sm-6 col-lg-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary-soft flex-fill" id="apply-filters-btn">Apply</button>
+        <a href="{{ url_for('transactions') }}" class="btn btn-ghost" id="reset-filters-btn">Reset</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card app-card">
+  <div class="card-body">
+    <p class="muted-text" id="result-count">
+      Showing {{ transactions|length }} transaction{{ '' if transactions|length == 1 else 's' }}
+    </p>
+
+    {% if transactions %}
+      <div class="table-responsive">
+        <table class="table app-table" id="transactions-table">
+          <thead>
+            <tr>
+              <th>ID</th><th>Title / Source</th><th>Type</th><th>Category</th>
+              <th class="text-end">Amount</th><th>Date</th><th>Description</th><th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in transactions %}
+            <tr id="transaction-row-{{ t.id }}">
+              <td class="cell-id">{{ t.id }}</td>
+              <td class="cell-title">{{ t.title }}</td>
+              <td class="cell-type">
+                <span class="badge-soft {% if t.type == 'Income' %}badge-income{% else %}badge-expense{% endif %}">{{ t.type }}</span>
+              </td>
+              <td class="cell-category">{{ t.category }}</td>
+              <td class="cell-amount text-end {% if t.type == 'Income' %}amount-income{% else %}amount-expense{% endif %}">
+                {% if t.type == 'Income' %}+{% else %}-{% endif %}{{ currency }}{{ t.amount|money }}
+              </td>
+              <td class="cell-date">{{ t.date.isoformat() }}</td>
+              <td class="cell-description">{{ t.description }}</td>
+              <td class="text-end">
+                <form method="post" action="{{ url_for('delete_transaction', transaction_id=t.id) }}"
+                      class="d-inline js-delete-form" data-title="{{ t.title }}">
+                  <button type="submit" class="btn btn-sm btn-delete" id="delete-btn-{{ t.id }}">Delete</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% elif filters_active %}
+      <p class="empty-note" id="no-transactions-message">No transactions match your search or filters. Try changing them or press Reset.</p>
+    {% else %}
+      <p class="empty-note" id="no-transactions-message">No transactions yet. Add your first income or expense to get started.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
